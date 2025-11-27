@@ -50,6 +50,7 @@
       --race-tekichu-offset: 12;
       --cta-height-multiplier: 0.14;
       --race-panel-aspect: 1;
+      --stage-bottom: 0px;
       font-size: 16px;
     }
     
@@ -348,6 +349,85 @@
     .ghost-button:active {
       transform: scale(0.98);
       box-shadow: inset 0 -2px 0 rgba(42, 99, 214, 0.16);
+    }
+
+    .btn {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .btn.is-disabled {
+      pointer-events: none;
+    }
+
+    .button-layer {
+      width: 100%;
+    }
+
+    .button-group {
+      display: none;
+      width: 100%;
+    }
+
+    .button-group.is-active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .start-buttons {
+      position: absolute;
+      top: calc(var(--stage-bottom) + 25px);
+      width: 100%;
+      justify-content: center;
+      gap: 18px;
+      z-index: 2;
+    }
+
+    .start-buttons img {
+      height: 110px;
+      width: auto;
+    }
+
+    .predict-buttons {
+      position: absolute;
+      top: calc(var(--stage-bottom) + 25px);
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      z-index: 2;
+    }
+
+    .predict-buttons img {
+      height: 110px;
+      width: auto;
+    }
+
+    .predict-buttons .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .btn-speedup {
+      position: absolute;
+      top: calc(var(--stage-bottom) + 25px);
+      left: 50%;
+      transform: translateX(-50%);
+      height: 110px;
+      width: auto;
+      z-index: 2;
+    }
+
+    .btn-replay {
+      position: absolute;
+      top: calc(var(--stage-bottom) + 25px);
+      left: 50%;
+      transform: translateX(-50%);
+      height: 110px;
+      width: auto;
+      z-index: 2;
     }
     
     .stage-controls {
