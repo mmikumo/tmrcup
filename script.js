@@ -306,16 +306,14 @@
     const app = document.querySelector('.app');
     const stageWrapper = document.querySelector('.stage-wrapper');
     const stage = document.querySelector('.stage');
-    const stageControls = document.querySelector('.stage-controls');
     const screens = document.querySelectorAll('.screen');
     const horseGrid = document.querySelector('.horse-grid');
     const titleRunnerLayer = document.querySelector('.title-runner-layer');
     const previewNameImg = document.querySelector('.predict-preview-name');
     const selectionSlots = Array.from(document.querySelectorAll('.selection-slot'));
-    const selectButton = document.querySelector('[data-action="selectHorse"]');
-    const controlGroups = document.querySelectorAll('.control-group');
-    const startButton = document.querySelector('[data-action="startRace"]');
-    const speedButton = document.querySelector('[data-action="speedUp"]');
+    const selectButton = document.querySelector('.btn-select');
+    const buttonGroups = document.querySelectorAll('.button-group');
+    const speedButton = document.querySelector('.btn-speedup');
     const resultList = document.querySelector('.result-list');
     const countdownEl = document.querySelector('.countdown');
     const raceCanvas = document.querySelector('.race-canvas');
@@ -717,6 +715,7 @@
     let previewHorseId = null; // 現在プレビュー中の馬ID
     let currentPreviewCard = null;
     let raceController = null; // レース制御クラスのインスタンス
+    let isSelectDisabled = true;
     
     // ---------------------------------------------
     // 初期化処理（画面ロード時に呼ぶ）
@@ -729,7 +728,6 @@
     resetPreviewPanel();
     updateSelectionSlots();
     updateSelectButton();
-    updateStartButton();
     updateControls(currentScreen);
     setupGlobalListeners();
     setupAnimationPreferenceListeners();
@@ -793,27 +791,39 @@
       const stageHeight = STAGE_RATIO_H * scale;
       const layoutWidth = LAYOUT_BASE_W * scale;
       const layoutHeight = LAYOUT_BASE_H * scale;
-    
-      root.style.setProperty('--stage-scale-factor', scale.toFixed(4));
-    root.style.setProperty('--stage-actual-width', `${stageWidth}px`);
-    root.style.setProperty('--stage-actual-height', `${stageHeight}px`);
-    root.style.setProperty('--layout-actual-width', `${layoutWidth}px`);
-    root.style.setProperty('--layout-actual-height', `${layoutHeight}px`);
-    updateRaceBackdropParallax(raceController?.panX ?? 0);
-  }
 
-  function updateRaceBackdropParallax(panX = 0) {
-    const clamped = Math.min(0, Number.isFinite(panX) ? panX : 0);
-    if (raceLayerSky) {
-      raceLayerSky.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SKY).toFixed(2)}px`;
+      root.style.setProperty('--stage-scale-factor', scale.toFixed(4));
+      root.style.setProperty('--stage-actual-width', `${stageWidth}px`);
+      root.style.setProperty('--stage-actual-height', `${stageHeight}px`);
+      root.style.setProperty('--layout-actual-width', `${layoutWidth}px`);
+      root.style.setProperty('--layout-actual-height', `${layoutHeight}px`);
+      updateRaceBackdropParallax(raceController?.panX ?? 0);
+      updateStageBottomVar();
     }
-    if (raceLayerBloom) {
-      raceLayerBloom.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SAKU).toFixed(2)}px`;
+
+    function updateRaceBackdropParallax(panX = 0) {
+      const clamped = Math.min(0, Number.isFinite(panX) ? panX : 0);
+      if (raceLayerSky) {
+        raceLayerSky.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SKY).toFixed(2)}px`;
+      }
+      if (raceLayerBloom) {
+        raceLayerBloom.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SAKU).toFixed(2)}px`;
+      }
+      if (raceLayerGround) {
+        raceLayerGround.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_GROUND).toFixed(2)}px`;
+      }
     }
-    if (raceLayerGround) {
-      raceLayerGround.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_GROUND).toFixed(2)}px`;
+
+    function updateStageBottomVar() {
+      const wrapper = stageWrapper || document.querySelector('.stage-wrapper');
+      const stageEl = stage || wrapper?.querySelector('.stage');
+      const container = gameCanvasInner || document.querySelector('.game-canvas-inner');
+      if (!stageEl || !container) return;
+      const rect = stageEl.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const stageBottom = rect.bottom - containerRect.top;
+      document.documentElement.style.setProperty('--stage-bottom', `${stageBottom}px`);
     }
-  }
     
     function initCompactMode() {
       const mq = window.matchMedia('(max-width: 420px)');
@@ -1025,7 +1035,7 @@
       if (actionTarget instanceof HTMLElement) {
         event.preventDefault();
         const actionName = actionTarget.dataset.action || '';
-        if (actionName) {
+        if (actionName && !actionTarget.classList.contains('is-disabled')) {
           handleAction(actionName, actionTarget);
         }
         return;
@@ -1056,7 +1066,7 @@
           if (actionTarget instanceof HTMLElement) {
             event.preventDefault();
             const actionName = actionTarget.dataset.action || '';
-            if (actionName) {
+            if (actionName && !actionTarget.classList.contains('is-disabled')) {
               handleAction(actionName, actionTarget);
             }
             return;
@@ -1091,7 +1101,11 @@
           closeModal();
           break;
         case 'selectHorse':
-          confirmPreviewSelection();
+          if (target?.classList.contains('is-racestart')) {
+            startRace();
+          } else {
+            confirmPreviewSelection();
+          }
           break;
         case 'backToTitle':
           clearSelections();
@@ -1193,7 +1207,6 @@
       selectedOrder[emptyIndex] = previewHorseId;
       updateSelectionSlots();
       updateCardsBadge();
-      updateStartButton();
       updateSelectButton();
     }
     
@@ -1201,11 +1214,10 @@
       if (rank < 0 || rank >= selectedOrder.length) return;
       const removed = selectedOrder[rank];
       if (!removed) return;
-    
+
       selectedOrder[rank] = null;
       updateSelectionSlots();
       updateCardsBadge();
-      updateStartButton();
       setPreviewHorse(removed);
       updateSelectButton();
     }
@@ -1214,7 +1226,6 @@
       selectedOrder = Array(MAX_SELECTION_RANKS).fill(null);
       updateSelectionSlots();
       updateCardsBadge();
-      updateStartButton();
       if (currentScreen === 'predict') {
         setPreviewHorse(DEFAULT_PREVIEW_HORSE_ID);
       } else {
@@ -1257,16 +1268,48 @@
       refreshCardAnimations();
     }
     
-    function updateStartButton() {
-      startButton.disabled = !selectedOrder.every((id) => Boolean(id));
-    }
-    
     function updateSelectButton() {
       if (!selectButton) return;
-      const filledCount = selectedOrder.reduce((count, id) => (id ? count + 1 : count), 0);
-      const shouldDisable =
-        !previewHorseId || filledCount >= MAX_SELECTION_RANKS || selectedOrder.includes(previewHorseId);
-      selectButton.disabled = shouldDisable;
+      const selectedCount = getSelectedHorseCount();
+      const previewAvailable = Boolean(previewHorseId) && !selectedOrder.includes(previewHorseId);
+      const hasVacancy = selectedCount < MAX_SELECTION_RANKS;
+      isSelectDisabled = !(previewAvailable && hasVacancy);
+
+      if (selectedCount >= MAX_SELECTION_RANKS) {
+        isSelectDisabled = false;
+      }
+      selectButton.classList.toggle('is-disabled', isSelectDisabled && selectedCount < MAX_SELECTION_RANKS);
+      updateSelectButtonState();
+    }
+
+    function getSelectedHorseCount() {
+      return selectedOrder.reduce((count, id) => (id ? count + 1 : count), 0);
+    }
+
+    function updateSelectButtonState() {
+      const selectBtn = document.querySelector('.btn-select');
+      if (!selectBtn) return;
+      const selectedCount = getSelectedHorseCount();
+
+      if (selectedCount >= MAX_SELECTION_RANKS) {
+        selectBtn.src = 'assets/button/RACESTART.svg';
+        selectBtn.classList.add('is-racestart');
+        selectBtn.classList.remove('is-disabled');
+      } else if (isSelectDisabled) {
+        selectBtn.src = 'assets/button/SELECTtaiki.svg';
+        selectBtn.classList.remove('is-racestart');
+        selectBtn.classList.add('is-disabled');
+      } else {
+        selectBtn.src = 'assets/button/SELECT.svg';
+        selectBtn.classList.remove('is-racestart');
+        selectBtn.classList.remove('is-disabled');
+      }
+    }
+
+    function setSpeedButtonDisabled(disabled) {
+      if (!speedButton) return;
+      speedButton.classList.toggle('is-disabled', disabled);
+      speedButton.src = disabled ? 'assets/button/SPEEDUPtaiki.svg' : 'assets/button/SPEEDUP.svg';
     }
     
     function updateCardsBadge() {
@@ -1327,8 +1370,8 @@
     }
 
     function updateControls(screenId) {
-      controlGroups.forEach((group) => {
-        if (group.dataset.controlsId === screenId) {
+      buttonGroups.forEach((group) => {
+        if (group.dataset.buttonsId === screenId) {
           group.classList.add('is-active');
           group.removeAttribute('aria-hidden');
         } else {
@@ -1336,7 +1379,10 @@
           group.setAttribute('aria-hidden', 'true');
         }
       });
-      requestAnimationFrame(applyStageScale);
+      requestAnimationFrame(() => {
+        applyStageScale();
+        updateStageBottomVar();
+      });
     }
 
     // ---------------------------------------------
@@ -1348,8 +1394,7 @@
         return;
       }
       switchScreen('race');
-      speedButton.disabled = false;
-      speedButton.textContent = 'SPEED UP';
+      setSpeedButtonDisabled(false);
       populateRacePredictionPanel();
       resetTekichuBadges();
       resetRaceFinishElements();
@@ -1442,8 +1487,7 @@
         countdownEl.textContent = '';
       }
       if (speedButton) {
-        speedButton.disabled = true;
-        speedButton.textContent = 'SPEED UP';
+        setSpeedButtonDisabled(true);
       }
       if (raceCanvas) {
         const ctx = raceCanvas.getContext('2d');
@@ -2470,18 +2514,13 @@
         if (!speedButton) return;
         const canBoost = this.running && this.isBoostableState();
         if (!canBoost) {
-          speedButton.disabled = true;
-          if (this.speedBoostRemaining <= 0) {
-            speedButton.textContent = 'SPEED UP';
-          }
+          setSpeedButtonDisabled(true);
           return;
         }
         if (this.speedBoostRemaining > 0) {
-          speedButton.disabled = true;
-          speedButton.textContent = '加速中！';
+          setSpeedButtonDisabled(true);
         } else {
-          speedButton.disabled = false;
-          speedButton.textContent = 'SPEED UP';
+          setSpeedButtonDisabled(false);
         }
       }
 
