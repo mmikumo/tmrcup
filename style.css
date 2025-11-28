@@ -28,8 +28,8 @@
       --stage-scale-factor: 1;
       --stage-actual-width: calc(var(--stage-base-width) * var(--stage-scale-factor));
       --stage-actual-height: calc(var(--stage-base-height) * var(--stage-scale-factor));
-      --layout-base-width: 730px;
-      --layout-base-height: 1560px;
+      --layout-base-width: 750px;
+      --layout-base-height: 1200px;
       --layout-actual-width: calc(var(--layout-base-width) * var(--stage-scale-factor));
       --layout-actual-height: calc(var(--layout-base-height) * var(--stage-scale-factor));
       --stage-bg-ground-height: 599;
@@ -175,6 +175,7 @@
       padding: 0;
       align-self: center;
       justify-self: center;
+      min-height: var(--layout-actual-height);
     }
     
     .stage {
@@ -280,6 +281,8 @@
       width: 100%;
       display: flex;
       justify-content: center;
+      align-items: flex-start;
+      min-height: calc((110px * var(--stage-scale-factor) * 2) + (16px * var(--stage-scale-factor)));
     }
 
     .button-group {
