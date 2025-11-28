@@ -1081,7 +1081,6 @@
 
           // 予想画面に入ったら必ず h1 をプレビュー状態にする
           setPreviewHorse(DEFAULT_PREVIEW_HORSE_ID);
-          setPreviewHorse('h1');
           break;
         case 'openHowTo':
           openModal(howtoModal);
