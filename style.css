@@ -357,13 +357,13 @@
 
     .button-group {
       position: absolute;
-      top: calc(var(--stage-bottom) + 25px);
+      top: calc(var(--stage-bottom) + (25px * var(--stage-scale-factor)));
       left: 0;
       width: 100%;
       display: none;
       justify-content: center;
       align-items: center;
-      gap: 18px;
+      gap: calc(18px * var(--stage-scale-factor));
       pointer-events: none;
     }
 
@@ -388,7 +388,7 @@
     }
 
     .button-group .btn img {
-      height: 110px;
+      height: calc(110px * var(--stage-scale-factor));
       width: auto;
       display: block;
     }
@@ -399,13 +399,13 @@
 
     .predict-buttons {
       flex-direction: column;
-      gap: 16px;
+      gap: calc(16px * var(--stage-scale-factor));
     }
 
     .predict-buttons .button-row {
       display: flex;
       justify-content: center;
-      gap: 18px;
+      gap: calc(18px * var(--stage-scale-factor));
     }
     
     body.is-compact .icon-button {
