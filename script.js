@@ -730,7 +730,6 @@
     updateSelectionSlots();
     updateSelectButtonState();
     updateButtons(currentScreen);
-    updateStageBottomVar();
     setupGlobalListeners();
     setupAnimationPreferenceListeners();
     initCompactMode();
@@ -799,7 +798,6 @@
     root.style.setProperty('--stage-actual-height', `${stageHeight}px`);
     root.style.setProperty('--layout-actual-width', `${layoutWidth}px`);
     root.style.setProperty('--layout-actual-height', `${layoutHeight}px`);
-    requestAnimationFrame(updateStageBottomVar);
     updateRaceBackdropParallax(raceController?.panX ?? 0);
   }
 
@@ -816,15 +814,6 @@
     }
   }
 
-    function updateStageBottomVar() {
-      if (!stageWrapper) return;
-      const hostRect = app?.getBoundingClientRect();
-      const rect = stageWrapper.getBoundingClientRect();
-      const baseTop = hostRect ? rect.top - hostRect.top : rect.top;
-      const stageBottom = baseTop + stageWrapper.offsetHeight;
-      document.documentElement.style.setProperty('--stage-bottom', `${stageBottom}px`);
-    }
-    
     function initCompactMode() {
       const mq = window.matchMedia('(max-width: 420px)');
     
@@ -1378,7 +1367,6 @@
       });
       requestAnimationFrame(() => {
         applyStageScale();
-        updateStageBottomVar();
       });
     }
 
