@@ -134,24 +134,40 @@
         </div>
       </section>
 
-      <div class="stage-controls" aria-live="polite">
-        <div class="control-group control-group--title is-active" data-controls-id="title">
-          <button class="icon-button" data-action="openHowTo" aria-label="遊び方を読む" title="遊び方">？</button>
-          <button class="cta-button" data-action="toPredict">ゲームで遊ぶ</button>
+      <div class="stage-buttons" aria-live="polite">
+        <div class="button-group start-buttons is-active" data-buttons-id="title">
+          <button class="btn btn-question" data-action="openHowTo" aria-label="遊び方を読む">
+            <img src="assets/button/question.svg" alt="">
+          </button>
+          <button class="btn btn-start" data-action="toPredict" aria-label="ゲームを始める">
+            <img src="assets/button/START.svg" alt="">
+          </button>
         </div>
-        <div class="control-group control-group--predict" data-controls-id="predict" aria-hidden="true">
-          <button class="cta-button cta-button--select" data-action="selectHorse" disabled aria-label="選択中の馬を順位に追加">SELECT</button>
-          <div class="control-row">
-            <button class="ghost-button" data-action="backToTitle">タイトルへ戻る</button>
-            <button class="ghost-button" data-action="clearSelection">選び直す</button>
+
+        <div class="button-group predict-buttons" data-buttons-id="predict" aria-hidden="true">
+          <button class="btn btn-select" data-action="selectHorse" aria-label="選択中の馬を順位に追加">
+            <img src="assets/button/SELECT.svg" alt="">
+          </button>
+          <div class="button-row">
+            <button class="btn btn-title" data-action="backToTitle" aria-label="タイトルへ戻る">
+              <img src="assets/button/TITLE.svg" alt="">
+            </button>
+            <button class="btn btn-reselect" data-action="clearSelection" aria-label="選び直す">
+              <img src="assets/button/reselect.svg" alt="">
+            </button>
           </div>
-          <button class="cta-button" data-action="startRace" disabled>レーススタート！</button>
         </div>
-        <div class="control-group control-group--race" data-controls-id="race" aria-hidden="true">
-          <button class="cta-button" data-action="speedUp">SPEED UP</button>
+
+        <div class="button-group race-buttons" data-buttons-id="race" aria-hidden="true">
+          <button class="btn btn-speedup" data-action="speedUp" aria-label="スピードアップ">
+            <img src="assets/button/SPEEDUP.svg" alt="">
+          </button>
         </div>
-        <div class="control-group control-group--result" data-controls-id="result" aria-hidden="true">
-          <button class="cta-button" data-action="replay">もう一度遊ぶ</button>
+
+        <div class="button-group result-buttons" data-buttons-id="result" aria-hidden="true">
+          <button class="btn btn-replay" data-action="replay" aria-label="もう一度遊ぶ">
+            <img src="assets/button/REPLAY.svg" alt="">
+          </button>
         </div>
       </div>
     </div>

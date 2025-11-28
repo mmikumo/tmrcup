@@ -50,6 +50,7 @@
       --race-tekichu-offset: 12;
       --cta-height-multiplier: 0.14;
       --race-panel-aspect: 1;
+      --stage-bottom: 0px;
       font-size: 16px;
     }
     
@@ -171,7 +172,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: calc(24px * var(--stage-scale-factor));
+      gap: 0;
       padding: 0;
       align-self: center;
       justify-self: center;
@@ -350,112 +351,61 @@
       box-shadow: inset 0 -2px 0 rgba(42, 99, 214, 0.16);
     }
     
-    .stage-controls {
+    .stage-buttons {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: calc(16px * var(--stage-scale-factor));
-      position: relative;
     }
-    
-    .control-group {
-      display: none;
-      width: 100%;
-      max-width: var(--stage-actual-width);
-      flex-direction: column;
-      gap: calc(12px * var(--stage-scale-factor));
-      align-items: center;
-      margin: 0 auto;
-    }
-    
-    .control-group.is-active {
-      display: flex;
-    }
-    
-    .control-group.is-measuring {
-      display: flex !important;
-      position: absolute !important;
-      visibility: hidden;
-      pointer-events: none;
+
+    .button-group {
+      position: absolute;
+      top: calc(var(--stage-bottom) + 25px);
       left: 0;
-      right: 0;
       width: 100%;
-      top: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      pointer-events: none;
     }
-    
-    .control-group--title {
-      flex-direction: row;
+
+    .button-group.is-active {
+      display: flex;
+      pointer-events: auto;
+    }
+
+    .button-group[aria-hidden='true'] {
+      display: none;
+    }
+
+    .button-group .btn {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      width: 100%;
+      cursor: pointer;
     }
-    
-    .control-group--title .cta-button {
-      flex: 1;
+
+    .button-group .btn img {
+      height: 110px;
+      width: auto;
+      display: block;
     }
-    
-    .control-group--predict .cta-button {
-      width: 100%;
+
+    .button-group .btn.is-disabled {
+      pointer-events: none;
     }
-    
-    .control-group--race .cta-button {
-      --cta-top: var(--color-button-yellow-top);
-      --cta-bottom: var(--color-button-yellow-bottom);
-      font-size: 1.8rem;
-      width: 100%;
+
+    .predict-buttons {
+      flex-direction: column;
+      gap: 16px;
     }
-    
-    .control-group--result .cta-button {
-      --cta-top: var(--color-button-pink-top);
-      --cta-bottom: var(--color-button-pink-bottom);
-      width: 100%;
-    }
-    
-    .control-row {
+
+    .predict-buttons .button-row {
       display: flex;
-      gap: 12px;
-      width: 100%;
       justify-content: center;
-    }
-    
-    .control-row .ghost-button {
-      flex: 1;
-      max-width: 50%;
-    }
-    
-    body.is-compact {
-      --cta-height-multiplier: 0.11;
-    }
-    
-    body.is-compact .stage-wrapper {
-      gap: calc(14px * var(--stage-scale-factor));
-      padding: calc(16px * var(--stage-scale-factor)) 0;
-    }
-    
-    body.is-compact .stage-controls {
-      gap: calc(10px * var(--stage-scale-factor));
-    }
-    
-    body.is-compact .control-group {
-      gap: calc(6px * var(--stage-scale-factor));
-    }
-    
-    body.is-compact .control-row {
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    
-    body.is-compact .control-row .ghost-button {
-      max-width: 100%;
-      flex: 1 1 100%;
-    }
-    
-    body.is-compact .cta-button {
-      font-size: 1.1rem;
-      padding: 0 20px;
+      gap: 18px;
     }
     
     body.is-compact .icon-button {
