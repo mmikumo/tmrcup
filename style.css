@@ -120,7 +120,6 @@
     .game-canvas-inner {
       position: relative;
       width: min(100vw, var(--layout-actual-width));
-      min-height: var(--layout-actual-height);
       transform: none;
       display: flex;
       flex-direction: column;
@@ -142,7 +141,6 @@
     .app {
       flex: 1;
       width: min(100vw, var(--layout-actual-width));
-      min-height: var(--layout-actual-height);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -165,12 +163,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: calc(25px * var(--stage-scale-factor));
-      padding: 0;
+      padding: calc(12px * var(--stage-scale-factor)) 0;
       align-self: center;
       justify-self: center;
-      min-height: var(--layout-actual-height);
     }
     
     .stage {
@@ -275,8 +272,10 @@
     .stage-buttons {
       width: 100%;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: calc(18px * var(--stage-scale-factor));
       min-height: calc((110px * var(--stage-scale-factor) * 2) + (16px * var(--stage-scale-factor)));
     }
 
@@ -328,6 +327,23 @@
       display: flex;
       justify-content: center;
       gap: calc(18px * var(--stage-scale-factor));
+    }
+
+    .app[data-screen='predict'] {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: calc(12px * var(--stage-scale-factor));
+      padding-bottom: calc(12px * var(--stage-scale-factor));
+    }
+
+    .app[data-screen='predict'] .stage-wrapper {
+      margin-bottom: calc(8px * var(--stage-scale-factor));
+    }
+
+    .app[data-screen='predict'] .stage-buttons {
+      margin-bottom: calc(8px * var(--stage-scale-factor));
     }
     
     body.is-compact .title-logo-frame {
