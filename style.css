@@ -22,19 +22,19 @@
       --transition-fast: 180ms ease-out;
       --transition-cta: 120ms ease-out;
       --stage-ratio-w: 705;
-      --stage-ratio-h: 900;
+      --stage-ratio-h: 800;
       --stage-base-width: 705px;
-      --stage-base-height: 900px;
+      --stage-base-height: 800px;
       --stage-scale-factor: 1;
       --stage-actual-width: calc(var(--stage-base-width) * var(--stage-scale-factor));
       --stage-actual-height: calc(var(--stage-base-height) * var(--stage-scale-factor));
       --layout-base-width: 750px;
-      --layout-base-height: 1200px;
+      --layout-base-height: 1100px;
       --layout-actual-width: calc(var(--layout-base-width) * var(--stage-scale-factor));
       --layout-actual-height: calc(var(--layout-base-height) * var(--stage-scale-factor));
-      --stage-bg-ground-height: 599;
-      --stage-bg-sky-height: 304;
-      --stage-bg-bloom-height: 55;
+      --stage-bg-ground-height: 532;
+      --stage-bg-sky-height: 270;
+      --stage-bg-bloom-height: 49;
       --title-logo-height: 451;
       --goal-gate-height: 223;
       --runner-height: 130;
@@ -150,6 +150,11 @@
       padding: 0;
       position: relative;
       overflow: visible;
+    }
+
+    .app[data-screen='predict'] {
+      padding-top: calc(10px * var(--stage-scale-factor));
+      padding-bottom: calc(10px * var(--stage-scale-factor));
     }
     
     .stage-wrapper {
