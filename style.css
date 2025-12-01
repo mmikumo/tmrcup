@@ -496,7 +496,7 @@
       position: relative;
       width: 100%;
       height: 100%;
-      background: url('assets/haikei/select.png') center / cover no-repeat;
+      background: url('assets/haikei/select.svg') center / cover no-repeat;
     }
     
     .predict-board {
@@ -580,6 +580,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+    }
+
+    .selection-slot .slot-clear {
+      display: none !important;
     }
     
     .slot-clear img {
@@ -743,7 +747,8 @@
       position: relative;
       flex: 1;
       overflow: hidden;
-      background: #bfe5ff;
+      background-color: #bfe5ff;
+      background-image: none;
       --race-zoom-scale: 1;
       --race-pan-x: 0px;
       --race-pan-y: 0px;
