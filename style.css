@@ -581,6 +581,10 @@
       align-items: center;
       justify-content: center;
     }
+
+    .selection-slot .slot-clear {
+      display: none !important;
+    }
     
     .slot-clear img {
       width: 100%;
@@ -743,7 +747,8 @@
       position: relative;
       flex: 1;
       overflow: hidden;
-      background: #bfe5ff;
+      background-color: #bfe5ff;
+      background-image: none;
       --race-zoom-scale: 1;
       --race-pan-x: 0px;
       --race-pan-y: 0px;
