@@ -94,8 +94,7 @@
 
 
     .game-viewport {
-      position: sticky;
-      top: 0;
+      position: relative;
       width: 100%;
       min-height: 100svh;
       padding: calc(env(safe-area-inset-top) + 8px)
@@ -103,33 +102,32 @@
         calc(env(safe-area-inset-bottom) + 8px)
         calc(env(safe-area-inset-left) + 8px);
       box-sizing: border-box;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow: visible;
       z-index: 1;
     }
-    
+
     .game-canvas {
       position: relative;
       width: 100%;
       height: auto;
-      display: grid;
-      place-items: center;
+      display: flex;
+      justify-content: center;
     }
-    
+
     .game-canvas-inner {
       position: relative;
       width: min(100vw, var(--layout-actual-width));
       min-height: var(--layout-actual-height);
       transform: none;
-      display: grid;
-      grid-template-rows: auto auto;
-      justify-items: center;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      align-content: center;
-      row-gap: calc(32px * var(--stage-scale-factor));
+      gap: calc(32px * var(--stage-scale-factor));
       will-change: auto;
-      touch-action: none;
+      touch-action: auto;
     }
     
     .page-header {
@@ -144,17 +142,14 @@
     .app {
       flex: 1;
       width: min(100vw, var(--layout-actual-width));
-      height: 100%;
       min-height: var(--layout-actual-height);
-      display: grid;
-      grid-template-rows: auto auto;
-      justify-items: center;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      align-content: center;
-      row-gap: calc(32px * var(--stage-scale-factor));
+      gap: calc(32px * var(--stage-scale-factor));
       padding: 0;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
     }
     
     .stage-wrapper {
@@ -1348,12 +1343,12 @@
       width: 100%;
       height: auto;
       background: transparent;
-      border: 4px solid var(--color-stage-border);
+      border: calc(4px * var(--stage-scale-factor)) solid var(--color-stage-border);
       border-radius: 0;
       box-shadow: none;
       overflow: hidden;
-      transform: translateY(60%);
-      transition: transform var(--transition-fast);
+      transform: none;
+      transition: box-shadow var(--transition-fast);
     }
 
     .banner-card a {
@@ -1365,11 +1360,6 @@
       display: block;
       height: auto;
       border: none;
-    }
-    
-    .banner-section:hover .banner-card,
-    .banner-section:focus-within .banner-card {
-      transform: translateY(0);
     }
     
     .modal {
