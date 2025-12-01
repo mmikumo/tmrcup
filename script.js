@@ -7,10 +7,10 @@
     const SPEED_UP_DURATION_MS = 800; // 加速時間
     const COUNTDOWN_INTERVAL_MS = 700; // カウントダウン間隔
     const STAGE_RATIO_W = 705; // ステージ比（横）：仮想解像度基準幅
-    const STAGE_RATIO_H = 900; // ステージ比（縦）：仮想解像度基準高
+    const STAGE_RATIO_H = 800; // ステージ比（縦）：仮想解像度基準高
     const STAGE_BASE_W = 705; // ステージ基準幅（実測時のスケール算出用）
     const LAYOUT_BASE_W = 750; // レイアウト全体の基準幅
-    const LAYOUT_BASE_H = 1200; // レイアウト全体の基準高さ
+    const LAYOUT_BASE_H = 1100; // レイアウト全体の基準高さ
     const PREDICTION_TOP_ROW_COUNT = 4; // 予想画面の上段に並べる頭数
     const PREDICTION_BOTTOM_ROW_COUNT = 5; // 予想画面の下段に並べる頭数
     const PREDICTION_TOP_ROW_BOTTOM_OFFSET = 235; // 上段の馬の足元位置（ステージ下端からの距離）
@@ -25,10 +25,10 @@
     // レース描画用の仮想解像度と演出用定数
     const RACE_VIRTUAL_WIDTH = 750;
     const RACE_VIRTUAL_HEIGHT = 1624;
-    const RACE_STAGE_BASE_HEIGHT = 900;
-    const RACE_BACKGROUND_GROUND_HEIGHT = 599;
-    const RACE_BACKGROUND_SKY_HEIGHT = 304;
-    const RACE_BACKGROUND_BLOOM_HEIGHT = 55;
+    const RACE_STAGE_BASE_HEIGHT = 800;
+    const RACE_BACKGROUND_GROUND_HEIGHT = 532;
+    const RACE_BACKGROUND_SKY_HEIGHT = 270;
+    const RACE_BACKGROUND_BLOOM_HEIGHT = 49;
     const RACE_BASE_SPEED_PER_SEC = 220; // 3.67px/frame を 60fps 想定で換算（レース全体をゆったり演出）
     const RACE_PARALLAX_SKY = 0.2;
     const RACE_PARALLAX_SAKU = 0.45;
