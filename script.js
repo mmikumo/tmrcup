@@ -741,9 +741,11 @@
     // ---------------------------------------------
     // レイアウト調整：ステージサイズを仮想画面幅に合わせて更新
     // ---------------------------------------------
+    let lastAppliedStageWidth = null;
+
     function initStageSizing() {
       if (!stage) return;
-    
+
       const update = () => {
         requestAnimationFrame(applyStageScale);
       };
@@ -771,22 +773,26 @@
         racePredictionBg.addEventListener('load', applyAspectRatio, { once: true });
       }
     }
-    
+
     function applyStageScale() {
       const root = document.documentElement;
       if (!root) return;
-    
-    const availableWidth =
-      window.visualViewport?.width ?? window.innerWidth ?? document.documentElement.clientWidth ?? LAYOUT_BASE_W;
-    const availableHeight =
-      window.visualViewport?.height ?? window.innerHeight ?? document.documentElement.clientHeight ?? LAYOUT_BASE_H;
-    if (!availableWidth || !availableHeight) {
-      return;
-    }
 
-    const scaleByWidth = availableWidth / LAYOUT_BASE_W;
-    const scaleByHeight = availableHeight / LAYOUT_BASE_H;
-      const scale = Math.max(0, Math.min(scaleByWidth, scaleByHeight));
+      const availableWidth =
+        window.visualViewport?.width ?? window.innerWidth ?? document.documentElement.clientWidth ?? LAYOUT_BASE_W;
+
+      if (!availableWidth) {
+        return;
+      }
+
+      const normalizedWidth = Math.round(availableWidth);
+      if (lastAppliedStageWidth !== null && normalizedWidth === lastAppliedStageWidth) {
+        return;
+      }
+      lastAppliedStageWidth = normalizedWidth;
+
+      const scaleByWidth = normalizedWidth / LAYOUT_BASE_W;
+      const scale = Math.max(0, scaleByWidth);
     
       const stageWidth = STAGE_BASE_W * scale;
       const stageHeight = STAGE_RATIO_H * scale;
@@ -794,25 +800,25 @@
       const layoutHeight = LAYOUT_BASE_H * scale;
     
       root.style.setProperty('--stage-scale-factor', scale.toFixed(4));
-    root.style.setProperty('--stage-actual-width', `${stageWidth}px`);
-    root.style.setProperty('--stage-actual-height', `${stageHeight}px`);
-    root.style.setProperty('--layout-actual-width', `${layoutWidth}px`);
-    root.style.setProperty('--layout-actual-height', `${layoutHeight}px`);
-    updateRaceBackdropParallax(raceController?.panX ?? 0);
-  }
+      root.style.setProperty('--stage-actual-width', `${stageWidth}px`);
+      root.style.setProperty('--stage-actual-height', `${stageHeight}px`);
+      root.style.setProperty('--layout-actual-width', `${layoutWidth}px`);
+      root.style.setProperty('--layout-actual-height', `${layoutHeight}px`);
+      updateRaceBackdropParallax(raceController?.panX ?? 0);
+    }
 
-  function updateRaceBackdropParallax(panX = 0) {
-    const clamped = Math.min(0, Number.isFinite(panX) ? panX : 0);
-    if (raceLayerSky) {
-      raceLayerSky.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SKY).toFixed(2)}px`;
+    function updateRaceBackdropParallax(panX = 0) {
+      const clamped = Math.min(0, Number.isFinite(panX) ? panX : 0);
+      if (raceLayerSky) {
+        raceLayerSky.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SKY).toFixed(2)}px`;
+      }
+      if (raceLayerBloom) {
+        raceLayerBloom.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SAKU).toFixed(2)}px`;
+      }
+      if (raceLayerGround) {
+        raceLayerGround.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_GROUND).toFixed(2)}px`;
+      }
     }
-    if (raceLayerBloom) {
-      raceLayerBloom.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_SAKU).toFixed(2)}px`;
-    }
-    if (raceLayerGround) {
-      raceLayerGround.style.backgroundPositionX = `${(clamped * RACE_PARALLAX_GROUND).toFixed(2)}px`;
-    }
-  }
 
     function initCompactMode() {
       const mq = window.matchMedia('(max-width: 420px)');

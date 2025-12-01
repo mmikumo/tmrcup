@@ -151,7 +151,14 @@
       position: relative;
       overflow: visible;
     }
-    
+
+    .app[data-screen='predict'] {
+      justify-content: flex-start;
+      padding-top: calc(16px * var(--stage-scale-factor));
+      padding-bottom: calc(16px * var(--stage-scale-factor));
+      overflow-y: auto;
+    }
+
     .stage-wrapper {
       width: min(
         var(--stage-actual-width),
@@ -171,6 +178,13 @@
       align-self: center;
       justify-self: center;
       min-height: var(--layout-actual-height);
+    }
+
+    .app[data-screen='predict'] .stage-wrapper {
+      justify-content: flex-start;
+      min-height: auto;
+      padding-top: calc(8px * var(--stage-scale-factor));
+      margin-bottom: calc(12px * var(--stage-scale-factor));
     }
     
     .stage {
@@ -278,6 +292,10 @@
       justify-content: center;
       align-items: flex-start;
       min-height: calc((110px * var(--stage-scale-factor) * 2) + (16px * var(--stage-scale-factor)));
+    }
+
+    .app[data-screen='predict'] .stage-buttons {
+      margin-bottom: calc(8px * var(--stage-scale-factor));
     }
 
     .button-group {
