@@ -13,8 +13,8 @@
     const LAYOUT_BASE_H = 1100; // レイアウト全体の基準高さ
     const PREDICTION_TOP_ROW_COUNT = 4; // 予想画面の上段に並べる頭数
     const PREDICTION_BOTTOM_ROW_COUNT = 5; // 予想画面の下段に並べる頭数
-    const PREDICTION_TOP_ROW_BOTTOM_OFFSET = 235; // 上段の馬の足元位置（ステージ下端からの距離）
-    const PREDICTION_BOTTOM_ROW_BOTTOM_OFFSET = 74; // 下段の馬の足元位置（ステージ下端からの距離）
+    const PREDICTION_TOP_ROW_BOTTOM_OFFSET = 155; // 上段の馬の足元位置（ステージ下端からの距離）
+    const PREDICTION_BOTTOM_ROW_BOTTOM_OFFSET = 35; // 下段の馬の足元位置（ステージ下端からの距離）
     const PREDICTION_TOP_ROW_LEFT_OFFSET = 145; // 上段左端のオフセット（下段と同間隔になるよう調整）
     const PREDICTION_TOP_ROW_RIGHT_OFFSET = 145; // 上段右端のオフセット（下段と同間隔になるよう調整）
     const PREDICTION_BOTTOM_ROW_LEFT_OFFSET = 85; // 下段左端のオフセット（ステージ内に収める）
