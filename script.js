@@ -6,6 +6,8 @@
     const SPEED_UP_MULTIPLIER = 1.8; // SPEED UP倍率
     const SPEED_UP_DURATION_MS = 800; // 加速時間
     const COUNTDOWN_INTERVAL_MS = 700; // カウントダウン間隔
+    const COUNTDOWN_START_DISPLAY_MS = 300; // START表示の短時間露出
+    const FINISH_DISPLAY_DURATION_MS = 600; // FINISH表示時間
     const STAGE_RATIO_W = 705; // ステージ比（横）：仮想解像度基準幅
     const STAGE_RATIO_H = 800; // ステージ比（縦）：仮想解像度基準高
     const STAGE_BASE_W = 705; // ステージ基準幅（実測時のスケール算出用）
@@ -369,6 +371,15 @@
       'assets/ui/arrow_select.svg',
       'assets/ui/arrow_select.png'
     ]);
+
+    const COUNTDOWN_IMAGE_SOURCES = Object.freeze([
+      ['assets/ui/count3.svg', 'assets/ui/count3.png'],
+      ['assets/ui/count2.svg', 'assets/ui/count2.png'],
+      ['assets/ui/count1.svg', 'assets/ui/count1.png'],
+      ['assets/ui/START.svg', 'assets/ui/START.png']
+    ]);
+
+    const FINISH_SOURCES = Object.freeze(['assets/ui/FINISH.svg', 'assets/ui/FINISH.png']);
 
     const SPEED_EFFECT_SOURCES = Object.freeze({
       star: ['assets/effects/speed_star.svg', 'assets/effects/speed_star.png'],
@@ -914,26 +925,27 @@
       wrapper.append(img);
       return wrapper;
     }
-    
-    function setArrowImageSource(imgEl, index = 0) {
-      if (!imgEl || !SELECT_ARROW_SOURCES.length) return;
-      const applySource = (sourceIndex) => {
-        if (sourceIndex >= SELECT_ARROW_SOURCES.length) {
+
+    function setImageSourceWithFallback(imgEl, candidates, index = 0) {
+      if (!imgEl || !Array.isArray(candidates) || !candidates.length) return;
+      const apply = (sourceIndex) => {
+        if (sourceIndex >= candidates.length) {
           imgEl.onerror = null;
           return;
         }
-        imgEl.dataset.arrowIndex = String(sourceIndex);
-        imgEl.onerror = () => {
-          applySource(sourceIndex + 1);
-        };
+        imgEl.onerror = () => apply(sourceIndex + 1);
         imgEl.onload = () => {
           imgEl.onerror = null;
           imgEl.onload = null;
         };
-        imgEl.src = SELECT_ARROW_SOURCES[sourceIndex];
+        imgEl.src = candidates[sourceIndex];
         applyPixelImgClassIfNeeded(imgEl, imgEl.src);
       };
-      applySource(index);
+      apply(index);
+    }
+
+    function setArrowImageSource(imgEl, index = 0) {
+      setImageSourceWithFallback(imgEl, SELECT_ARROW_SOURCES, index);
     }
 
     function setSpeedEffectImageSource(imgEl, type, index = 0) {
@@ -1487,14 +1499,32 @@
       }
     }
 
+    function clearCountdownOverlay() {
+      if (countdownEl) {
+        countdownEl.innerHTML = '';
+      }
+    }
+
+    function renderCountdownImage(candidates, kind = '') {
+      if (!countdownEl) return null;
+      countdownEl.innerHTML = '';
+      const img = document.createElement('img');
+      img.className = 'countdown-img';
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      if (kind) img.dataset.countdownKind = kind;
+      setImageSourceWithFallback(img, candidates);
+      countdownEl.append(img);
+      return img;
+    }
+
     function resetRaceFinishElements() {
       if (raceController) {
         raceController.dispose();
         raceController = null;
       }
-      if (countdownEl) {
-        countdownEl.textContent = '';
-      }
+      clearCountdownOverlay();
       if (speedButton) {
         setSpeedButtonDisabled(true);
       }
@@ -1546,7 +1576,8 @@
         this.passMargin = 0;
         this.finishSpeed = 0;
         this.rafId = null;
-        this.countdownValues = ['3', '2', '1', 'GO!'];
+        this.finishOverlayShown = false;
+        this.finishOverlayTimer = null;
         this.completing = false;
         this.timelineSeconds = 0;
         this.relativeAdvanceSpeed = 0;
@@ -1627,6 +1658,11 @@
         this.finishCameraPan = 0;
         this.clearClimaxContenders();
         this.stopSpeedEffects();
+        if (this.finishOverlayTimer) {
+          clearTimeout(this.finishOverlayTimer);
+          this.finishOverlayTimer = null;
+        }
+        this.finishOverlayShown = false;
       }
 
       async start() {
@@ -1712,20 +1748,31 @@
 
       async prepareCountdown() {
         return new Promise((resolve) => {
-          let index = 0;
-          if (countdownEl) {
-            countdownEl.textContent = this.countdownValues[index];
+          if (!COUNTDOWN_IMAGE_SOURCES.length) {
+            resolve();
+            return;
           }
+
+          const countdownKinds = ['count3', 'count2', 'count1', 'start'];
+          let index = 0;
+          renderCountdownImage(
+            COUNTDOWN_IMAGE_SOURCES[index],
+            countdownKinds[index] || ''
+          );
+
           const timer = setInterval(() => {
             index += 1;
-            if (index >= this.countdownValues.length) {
+            if (index >= COUNTDOWN_IMAGE_SOURCES.length) {
               clearInterval(timer);
-              if (countdownEl) {
-                countdownEl.textContent = '';
-              }
-              resolve();
-            } else if (countdownEl) {
-              countdownEl.textContent = this.countdownValues[index];
+              setTimeout(() => {
+                clearCountdownOverlay();
+                resolve();
+              }, COUNTDOWN_START_DISPLAY_MS);
+            } else {
+              renderCountdownImage(
+                COUNTDOWN_IMAGE_SOURCES[index],
+                countdownKinds[index] || ''
+              );
             }
           }, COUNTDOWN_INTERVAL_MS);
         });
@@ -2906,6 +2953,10 @@
               runnerCenter >= this.goalCenterX
             ) {
               if (runner.rankIndex === 0) {
+                if (!this.finishOverlayShown) {
+                  this.finishOverlayShown = true;
+                  this.showFinishOverlay();
+                }
                 this.lockCameraToGoal();
                 this.triggerPhotoFinish();
               }
@@ -2918,6 +2969,17 @@
           }
           this.updateRunnerAnimation(runner, deltaSeconds);
         });
+      }
+
+      showFinishOverlay() {
+        renderCountdownImage(FINISH_SOURCES, 'finish');
+        if (this.finishOverlayTimer) {
+          clearTimeout(this.finishOverlayTimer);
+        }
+        this.finishOverlayTimer = setTimeout(() => {
+          clearCountdownOverlay();
+          this.finishOverlayTimer = null;
+        }, FINISH_DISPLAY_DURATION_MS);
       }
 
       updateRunnerAnimation(runner, deltaSeconds) {
