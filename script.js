@@ -1505,7 +1505,7 @@
       }
     }
 
-    function renderCountdownImage(candidates) {
+    function renderCountdownImage(candidates, kind = '') {
       if (!countdownEl) return null;
       countdownEl.innerHTML = '';
       const img = document.createElement('img');
@@ -1513,6 +1513,7 @@
       img.alt = '';
       img.loading = 'lazy';
       img.decoding = 'async';
+      if (kind) img.dataset.countdownKind = kind;
       setImageSourceWithFallback(img, candidates);
       countdownEl.append(img);
       return img;
@@ -1752,8 +1753,12 @@
             return;
           }
 
+          const countdownKinds = ['count3', 'count2', 'count1', 'start'];
           let index = 0;
-          renderCountdownImage(COUNTDOWN_IMAGE_SOURCES[index]);
+          renderCountdownImage(
+            COUNTDOWN_IMAGE_SOURCES[index],
+            countdownKinds[index] || ''
+          );
 
           const timer = setInterval(() => {
             index += 1;
@@ -1764,7 +1769,10 @@
                 resolve();
               }, COUNTDOWN_START_DISPLAY_MS);
             } else {
-              renderCountdownImage(COUNTDOWN_IMAGE_SOURCES[index]);
+              renderCountdownImage(
+                COUNTDOWN_IMAGE_SOURCES[index],
+                countdownKinds[index] || ''
+              );
             }
           }, COUNTDOWN_INTERVAL_MS);
         });
@@ -2964,7 +2972,7 @@
       }
 
       showFinishOverlay() {
-        renderCountdownImage(FINISH_SOURCES);
+        renderCountdownImage(FINISH_SOURCES, 'finish');
         if (this.finishOverlayTimer) {
           clearTimeout(this.finishOverlayTimer);
         }
