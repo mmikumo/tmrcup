@@ -390,6 +390,26 @@
       typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)')
         : null;
+
+    // ★PIXEL_RENDERING: DOMの<img>にpixel系クラスを付与
+    function applyPixelImgClassIfNeeded(imgEl, srcValue) {
+      if (!imgEl) return;
+      const src = String(srcValue || imgEl.getAttribute('src') || imgEl.src || '');
+      const isPixel =
+        src.includes('assets/horses/') ||
+        src.includes('/assets/horses/') ||
+        src.includes('assets/effects/') ||
+        src.includes('/assets/effects/') ||
+        src.includes('assets/ui/') ||
+        src.includes('/assets/ui/');
+      if (isPixel) imgEl.classList.add('pixel-img');
+    }
+
+    // ★PIXEL_RENDERING: 画面切替などで生成された<img>を一括で補正
+    function refreshPixelImgClassesInDom(root = document) {
+      if (!root) return;
+      root.querySelectorAll('img').forEach((img) => applyPixelImgClassIfNeeded(img));
+    }
     
     const slotImages = selectionSlots.map((slot) => slot.querySelector('.slot-horse-img'));
     const slotClearButtons = selectionSlots.map((slot) => slot.querySelector('.slot-clear'));
@@ -588,6 +608,7 @@
       if (imgEl.dataset.frameSrc === src) return;
       imgEl.dataset.frameSrc = src;
       imgEl.src = src;
+      applyPixelImgClassIfNeeded(imgEl, src);
     }
     
     function startTwoFrameLoop(imgEl, horseId, intervalMs) {
@@ -732,11 +753,12 @@
     updateButtons(currentScreen);
     setupGlobalListeners();
     setupAnimationPreferenceListeners();
-    initCompactMode();
-    updateRaceBackdropParallax(0);
-    detectSilhouetteSource().catch((error) => {
-      console.warn('[predict] silhouette detection failed', error);
-    });
+      initCompactMode();
+      updateRaceBackdropParallax(0);
+      detectSilhouetteSource().catch((error) => {
+        console.warn('[predict] silhouette detection failed', error);
+      });
+      refreshPixelImgClassesInDom();
     
     // ---------------------------------------------
     // レイアウト調整：ステージサイズを仮想画面幅に合わせて更新
@@ -909,6 +931,7 @@
           imgEl.onload = null;
         };
         imgEl.src = SELECT_ARROW_SOURCES[sourceIndex];
+        applyPixelImgClassIfNeeded(imgEl, imgEl.src);
       };
       applySource(index);
     }
@@ -928,6 +951,7 @@
           imgEl.onload = null;
         };
         imgEl.src = candidates[sourceIndex];
+        applyPixelImgClassIfNeeded(imgEl, imgEl.src);
       };
       apply(index);
     }
@@ -1352,6 +1376,7 @@
       }
       next.setAttribute('aria-hidden', 'false');
       refreshAnimationsForCurrentScreen();
+      refreshPixelImgClassesInDom();
     }
 
     function updateButtons(screenId) {
@@ -1495,6 +1520,7 @@
         this.thirdHorse = sanitized[2] || null;
         this.canvas = raceCanvas;
         this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
+        this.applyImageSmoothingSettings();
         this.running = false;
         this.speedMultiplier = 1;
         this.speedBoostRemaining = 0;
@@ -1573,6 +1599,14 @@
         this.speedEffectTimer = null;
         this.finishCameraLocked = false;
         this.finishCameraPan = 0;
+      }
+
+      applyImageSmoothingSettings() {
+        if (!this.ctx) return;
+        // ★PIXEL_RENDERING: Canvas描画を最近傍に（ぼかし補間を無効化）
+        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.webkitImageSmoothingEnabled = false;
+        this.ctx.mozImageSmoothingEnabled = false;
       }
 
       dispose() {
@@ -1700,6 +1734,7 @@
       setupScene() {
         this.stageWidth = this.canvas.width;
         this.stageHeight = this.canvas.height;
+        this.applyImageSmoothingSettings();
         this.scaleX = this.stageWidth / RACE_VIRTUAL_WIDTH;
         this.scaleY = this.stageHeight / RACE_VIRTUAL_HEIGHT;
         this.stageScale = this.stageHeight / RACE_STAGE_BASE_HEIGHT;
@@ -3488,6 +3523,7 @@
           const nameImg = document.createElement('img');
           nameImg.className = 'result-name-img';
           nameImg.src = horse.resultNameImg;
+          applyPixelImgClassIfNeeded(nameImg, nameImg.src);
           nameImg.alt = '';
           nameImg.setAttribute('aria-hidden', 'true');
           nameWrap.append(nameImg);

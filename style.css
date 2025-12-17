@@ -734,6 +734,12 @@
       box-shadow: 0 calc(6px * var(--stage-scale-factor))
         calc(12px * var(--stage-scale-factor)) rgba(255, 91, 139, 0.3);
     }
+
+    /* ★PIXEL_RENDERING: pixel系画像は拡大縮小してもぼやけないようにする */
+    .pixel-img {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
     
     .race-stage {
       position: relative;
