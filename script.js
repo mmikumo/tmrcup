@@ -36,7 +36,7 @@
     const RACE_PARALLAX_SAKU = 0.45;
     const RACE_PARALLAX_GROUND = 1.35; // 地面を馬より速く流すための倍率
     const RACE_OTHER_LANES = [560, 640];
-    const RACE_PASS_MARGIN = 80;
+    const RACE_PASS_MARGIN = 60;
     const RACE_GOAL_TARGET_RATIO = 0.5; // ゴール停止位置（ステージ幅に対する割合）
     const RACE_GOAL_RELATIVE_BLEND = 1; // ゴール演出時の相対速度補正（1で完全同期）
     const RACE_TIMELINE_SCALE = 2.4; // レース全体の時間を約2.4倍に引き伸ばす
@@ -49,10 +49,10 @@
     const RACE_SPEEDUP_STRAIGHT_RELIEF = 0.5; // 直線での相対的な減速幅
     const RACE_MIN_SPEED_FACTOR = 0.62;
     const RACE_MAX_SPEED_FACTOR = 1.2;
-    const RACE_FINISH_OFFSETS = [0, 1.0, 1.6]; // 秒（1着→1秒後→2着→0.6秒後→3着）
+    const RACE_FINISH_OFFSETS = [0, 0.35, 0.7]; // 秒（1着→0.35秒後→2着→0.35秒後→3着）
     const RACE_FINISH_SPEED = 520; // px/秒（仮想解像度基準）
-    const RACE_SECOND_HOLD_OFFSET = 160; // ヒーローから見た2着馬の待機オフセット（ステージ座標）
-    const RACE_THIRD_HOLD_OFFSET = 210; // ヒーローから見た3着馬の待機オフセット（ステージ座標）
+    const RACE_SECOND_HOLD_OFFSET = 120; // ヒーローから見た2着馬の待機オフセット（ステージ座標）
+    const RACE_THIRD_HOLD_OFFSET = 170; // ヒーローから見た3着馬の待機オフセット（ステージ座標）
     const RACE_OTHER_PACK_BASE_OFFSET = 150; // 非選択馬の隊列基準オフセット
     const RACE_OTHER_PACK_COLUMN_SPACING = 70; // 隊列内の列間隔
     const RACE_OTHER_PACK_ROW_SPACING = 28; // 隊列内の列ごとの前後差
@@ -111,13 +111,13 @@
       default: 0,
       intro: 0,
       others: 16,
-      straight: 28,
-      climax: 40,
-      third: 56,
-      second: 72,
-      lead: 90,
-      goal: 110,
-      finish: 126
+      straight: 16,
+      climax: 22,
+      third: 28,
+      second: 32,
+      lead: 36,
+      goal: 40,
+      finish: 44
     };
     const RACE_CAMERA_FOLLOW_ANCHOR = 0.45;
     const RACE_CAMERA_FOLLOW_STRENGTH = {
@@ -2422,14 +2422,14 @@
           case 'third':
             if (this.thirdRunner) {
               this.alignFinalistToHold(this.thirdRunner);
-              this.thirdRunner.speedFactor = Math.min(1.16, this.thirdRunner.speedFactor + 0.12);
+              this.thirdRunner.speedFactor = Math.min(1.12, this.thirdRunner.speedFactor + 0.08);
               this.thirdRunner.boosted = true;
             }
             break;
           case 'second':
             if (this.secondRunner) {
               this.alignFinalistToHold(this.secondRunner);
-              this.secondRunner.speedFactor = Math.min(1.18, this.secondRunner.speedFactor + 0.12);
+              this.secondRunner.speedFactor = Math.min(1.14, this.secondRunner.speedFactor + 0.1);
               this.secondRunner.boosted = true;
             }
             break;
@@ -2569,7 +2569,7 @@
           runner.runOut = false;
           runner.exited = false;
           runner.launchDelay = baseDelay * 1000;
-          runner.runSpeed = this.finishSpeed * (1 - index * 0.04);
+          runner.runSpeed = this.finishSpeed * (1 - index * 0.02);
           runner.badgeTriggered = false;
         });
       }
@@ -2717,7 +2717,7 @@
             deltaSeconds,
             runnerSpeed,
             stateKey,
-            ['goal', 'lead', 'climax'].includes(stateKey),
+            ['goal', 'lead'].includes(stateKey),
             trackSpeed,
             heroCenterX
           );
@@ -2879,7 +2879,7 @@
           case 'third':
             return ['third', 'second', 'lead', 'goal', 'finish'].includes(stateKey);
           case 'second':
-            return ['second', 'lead', 'goal', 'finish'].includes(stateKey);
+            return ['climax', 'second', 'lead', 'goal', 'finish'].includes(stateKey);
           default:
             return true;
         }
@@ -3214,11 +3214,46 @@
         this.panY = this.panBaseY;
         this.setTrackPan(this.panX, this.panY);
       }
-    
+
+      resolveClimaxDuelModifier(runner, stateKey) {
+        if (stateKey !== 'climax' || !runner) {
+          return 1;
+        }
+        const duration = Math.max(this.climaxDurationMs || 0, 1);
+        const progress = Math.max(0, Math.min(1, this.stateElapsedMs / duration));
+        if (runner.label === 'second') {
+          const leadStart = 0.28;
+          const leadEnd = 0.62;
+          if (progress < leadStart) {
+            return 1;
+          }
+          if (progress <= leadEnd) {
+            const ratio = (progress - leadStart) / (leadEnd - leadStart);
+            const intensity = Math.sin(Math.min(Math.PI, Math.max(0, ratio * Math.PI)));
+            return 1 + intensity * 0.08;
+          }
+          const fade = Math.min(1, (progress - leadEnd) / 0.25);
+          return 1 + 0.02 - 0.05 * fade;
+        }
+        if (runner.label === 'hero') {
+          const reclaimStart = 0.5;
+          if (progress <= reclaimStart) {
+            return 1;
+          }
+          const reclaimRatio = Math.min(1, (progress - reclaimStart) / 0.35);
+          return 1 + reclaimRatio * 0.06;
+        }
+        if (runner.label === 'third') {
+          const stayClose = Math.min(1, progress / 0.8);
+          return 1 + stayClose * 0.015;
+        }
+        return 1;
+      }
+
       resolveRunnerSpeed(stateKey, trackSpeed) {
         return trackSpeed;
       }
-    
+
       resolveDynamicFactor(runner, stateKey) {
         if (!runner) return 1;
         let factor = runner.speedFactor ?? 1;
@@ -3239,6 +3274,7 @@
           const pulse = Math.sin((this.timelineSeconds * pulseFreq + (runner.wavePhase ?? 0)) * Math.PI * 2);
           factor *= 1 + pulse * pulseAmp;
         }
+        factor *= this.resolveClimaxDuelModifier(runner, stateKey);
         if (runner.boosted) {
           factor += 0.06;
         }
