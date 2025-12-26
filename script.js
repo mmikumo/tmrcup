@@ -1563,6 +1563,7 @@
         this.backgroundOffsets = { sky: 0, bloom: 0, ground: 0 };
         this.goal = null;
         this.goalCenterX = 0;
+        this.straightGoalCenterX = 0;
         this.heroRunner = null;
         this.secondRunner = null;
         this.thirdRunner = null;
@@ -1600,6 +1601,7 @@
           200: { remaining: 0 },
           100: { remaining: 0 }
         };
+        this.distancePhase = 'none';
         this.distanceTelopQueue = [];
         this.zoomScale = 1;
         this.panX = 0;
@@ -1832,6 +1834,8 @@
         this.dustRateMultiplier = 1;
         this.finishCameraLocked = false;
         this.finishCameraPan = 0;
+        this.straightGoalCenterX = 0;
+        this.distancePhase = 'none';
         this.distanceTelopQueue = [];
         Object.values(this.distanceTelopState).forEach((entry) => {
           entry.remaining = 0;
@@ -1980,15 +1984,8 @@
         this.toggleClimaxVisuals(true);
         this.applyClimaxLaneOffsets();
         this.setupClimaxContenders();
-        this.distanceTelopQueue = [
-          { distance: '200', delay: RACE_CLIMAX_DISTANCE_TOGGLE_200 },
-          { distance: '100', delay: RACE_CLIMAX_DISTANCE_TOGGLE_100 }
-        ];
-        Object.values(this.distanceTelopState).forEach((entry) => {
-          entry.remaining = 0;
-        });
-        this.showDistanceTelop('200', false);
-        this.showDistanceTelop('100', false);
+        this.captureStraightGoalCenter();
+        this.distanceTelopQueue = [];
       }
 
       endClimaxState() {
@@ -2329,6 +2326,7 @@
         this.zoomTimer = RACE_STRAIGHT_ZOOM_DURATION_MS;
         this.toggleStraightTelop(true);
         this.updateZoomClass(true);
+        this.captureStraightGoalCenter();
       }
 
       updateEffects(deltaSeconds) {
@@ -2627,6 +2625,7 @@
         this.updateEffects(deltaSeconds);
         this.updateDust(trackSpeed, deltaSeconds);
         this.updateClimax(deltaSeconds, stateKey, trackSpeed);
+        this.updateDistanceTelopTriggers(deltaSeconds, stateKey);
         this.updateCamera(deltaSeconds, stateKey);
         this.render();
 
@@ -3065,7 +3064,6 @@
         const deltaMs = deltaSeconds * 1000;
         this.climaxTimer += deltaMs;
         this.queueDistanceTelops(deltaMs);
-        this.updateDistanceTelops(deltaMs);
         if (!this.climaxShakeTriggered && this.climaxTimer >= this.climaxDurationMs * 0.7) {
           this.startShake(RACE_CLIMAX_SHAKE);
           this.climaxShakeTriggered = true;
@@ -3091,6 +3089,88 @@
           ? this.heroRunner.x + this.heroRunner.width / 2
           : 0;
         this.updateClimaxContenders(deltaSeconds, heroCenter);
+      }
+
+      captureStraightGoalCenter() {
+        if (Number.isFinite(this.straightGoalCenterX) && this.straightGoalCenterX > 0) {
+          return;
+        }
+
+        let goalX = Number.isFinite(this.goalCenterX) && this.goalCenterX > 0
+          ? this.goalCenterX
+          : null;
+
+        const goal = this.goal;
+        const hasTarget = Number.isFinite(goal?.targetX);
+        const hasStart = Number.isFinite(goal?.startX);
+
+        if (!goalX && goal) {
+          if (hasTarget && hasStart) {
+            goalX = goal.startX + (goal.targetX - goal.startX);
+          } else if (hasTarget) {
+            goalX = goal.targetX;
+          }
+        }
+
+        if (!Number.isFinite(goalX)) {
+          const fallbackTarget = hasTarget
+            ? goal.targetX
+            : this.stageWidth * RACE_GOAL_TARGET_RATIO;
+          const plannedTravel = hasStart ? fallbackTarget - goal.startX : 0;
+          goalX = hasStart ? goal.startX + plannedTravel : fallbackTarget;
+        }
+
+        this.straightGoalCenterX = goalX;
+      }
+
+      updateDistanceTelopTriggers(deltaSeconds, stateKey) {
+        const deltaMs = deltaSeconds * 1000;
+        this.updateDistanceTelops(deltaMs);
+
+        if (!this.afterStraight && !this.climaxActive) {
+          return;
+        }
+        if (!this.heroRunner) {
+          return;
+        }
+
+        this.captureStraightGoalCenter();
+        const baseGoalX =
+          stateKey === 'goal' ? this.goalCenterX : this.straightGoalCenterX;
+
+        if (!Number.isFinite(baseGoalX)) {
+          return;
+        }
+
+        const heroCenter = this.heroRunner.x + this.heroRunner.width / 2;
+        if (heroCenter >= baseGoalX) {
+          return;
+        }
+
+        const straightBuffer = this.markerSpacing * 0.8;
+        if (heroCenter < baseGoalX - straightBuffer) {
+          return;
+        }
+
+        if (
+          this.distancePhase === 'none' &&
+          heroCenter >= baseGoalX - this.markerSpacing * 2
+        ) {
+          this.distancePhase = '200';
+          this.distanceTelopState['200'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
+          this.showDistanceTelop('200', true);
+          this.showDistanceTelop('100', false);
+        }
+
+        if (
+          this.distancePhase === '200' &&
+          heroCenter >= baseGoalX - this.markerSpacing * 1
+        ) {
+          this.distancePhase = '100';
+          this.distanceTelopState['100'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
+          this.showDistanceTelop('100', true);
+          this.showDistanceTelop('200', false);
+        }
       }
       updateCamera(deltaSeconds, stateKey) {
         this.updateCameraFollow(deltaSeconds, stateKey);
