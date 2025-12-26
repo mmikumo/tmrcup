@@ -2627,6 +2627,7 @@
         this.updateEffects(deltaSeconds);
         this.updateDust(trackSpeed, deltaSeconds);
         this.updateClimax(deltaSeconds, stateKey, trackSpeed);
+        this.updateDistanceTelopTriggers(deltaSeconds);
         this.updateCamera(deltaSeconds, stateKey);
         this.render();
 
@@ -2939,27 +2940,6 @@
 
       updateFinishState(deltaSeconds) {
         const runners = [this.heroRunner, this.secondRunner, this.thirdRunner];
-        if (this.heroRunner) {
-          const heroCenter = this.heroRunner.x + this.heroRunner.width / 2;
-          const trigger200 = this.distanceTelopTriggered?.['200'];
-          const trigger100 = this.distanceTelopTriggered?.['100'];
-          if (
-            !trigger200 &&
-            heroCenter >= this.goalCenterX - this.markerSpacing * 2
-          ) {
-            this.distanceTelopState['200'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
-            this.showDistanceTelop('200', true);
-            this.distanceTelopTriggered['200'] = true;
-          }
-          if (
-            !trigger100 &&
-            heroCenter >= this.goalCenterX - this.markerSpacing * 1
-          ) {
-            this.distanceTelopState['100'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
-            this.showDistanceTelop('100', true);
-            this.distanceTelopTriggered['100'] = true;
-          }
-        }
         runners.forEach((runner) => {
           if (!runner) return;
           if (!runner.runOut && this.stateElapsedMs >= runner.launchDelay) {
@@ -2990,7 +2970,6 @@
           }
           this.updateRunnerAnimation(runner, deltaSeconds);
         });
-        this.updateDistanceTelops(deltaSeconds * 1000);
       }
 
       showFinishOverlay() {
@@ -3087,7 +3066,6 @@
         const deltaMs = deltaSeconds * 1000;
         this.climaxTimer += deltaMs;
         this.queueDistanceTelops(deltaMs);
-        this.updateDistanceTelops(deltaMs);
         if (!this.climaxShakeTriggered && this.climaxTimer >= this.climaxDurationMs * 0.7) {
           this.startShake(RACE_CLIMAX_SHAKE);
           this.climaxShakeTriggered = true;
@@ -3113,6 +3091,42 @@
           ? this.heroRunner.x + this.heroRunner.width / 2
           : 0;
         this.updateClimaxContenders(deltaSeconds, heroCenter);
+      }
+
+      updateDistanceTelopTriggers(deltaSeconds) {
+        const deltaMs = deltaSeconds * 1000;
+        this.updateDistanceTelops(deltaMs);
+
+        if (!this.afterStraight && !this.climaxActive) {
+          return;
+        }
+        if (!this.heroRunner) {
+          return;
+        }
+
+        const heroCenter = this.heroRunner.x + this.heroRunner.width / 2;
+        if (!Number.isFinite(this.goalCenterX) || heroCenter >= this.goalCenterX) {
+          return;
+        }
+
+        const trigger200 = this.distanceTelopTriggered?.['200'];
+        const trigger100 = this.distanceTelopTriggered?.['100'];
+        if (
+          !trigger200 &&
+          heroCenter >= this.goalCenterX - this.markerSpacing * 2
+        ) {
+          this.distanceTelopState['200'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
+          this.showDistanceTelop('200', true);
+          this.distanceTelopTriggered['200'] = true;
+        }
+        if (
+          !trigger100 &&
+          heroCenter >= this.goalCenterX - this.markerSpacing * 1
+        ) {
+          this.distanceTelopState['100'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
+          this.showDistanceTelop('100', true);
+          this.distanceTelopTriggered['100'] = true;
+        }
       }
       updateCamera(deltaSeconds, stateKey) {
         this.updateCameraFollow(deltaSeconds, stateKey);
