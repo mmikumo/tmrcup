@@ -1601,7 +1601,7 @@
           200: { remaining: 0 },
           100: { remaining: 0 }
         };
-        this.distanceTelopTriggered = { 200: false, 100: false };
+        this.distancePhase = 'none';
         this.distanceTelopQueue = [];
         this.zoomScale = 1;
         this.panX = 0;
@@ -1835,7 +1835,7 @@
         this.finishCameraLocked = false;
         this.finishCameraPan = 0;
         this.straightGoalCenterX = 0;
-        this.distanceTelopTriggered = { 200: false, 100: false };
+        this.distancePhase = 'none';
         this.distanceTelopQueue = [];
         Object.values(this.distanceTelopState).forEach((entry) => {
           entry.remaining = 0;
@@ -1986,12 +1986,6 @@
         this.setupClimaxContenders();
         this.captureStraightGoalCenter();
         this.distanceTelopQueue = [];
-        this.distanceTelopTriggered = { 200: false, 100: false };
-        Object.values(this.distanceTelopState).forEach((entry) => {
-          entry.remaining = 0;
-        });
-        this.showDistanceTelop('200', false);
-        this.showDistanceTelop('100', false);
       }
 
       endClimaxState() {
@@ -3153,23 +3147,29 @@
           return;
         }
 
-        const trigger200 = this.distanceTelopTriggered?.['200'];
-        const trigger100 = this.distanceTelopTriggered?.['100'];
+        const straightBuffer = this.markerSpacing * 0.8;
+        if (heroCenter < baseGoalX - straightBuffer) {
+          return;
+        }
+
         if (
-          !trigger200 &&
+          this.distancePhase === 'none' &&
           heroCenter >= baseGoalX - this.markerSpacing * 2
         ) {
+          this.distancePhase = '200';
           this.distanceTelopState['200'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
           this.showDistanceTelop('200', true);
-          this.distanceTelopTriggered['200'] = true;
+          this.showDistanceTelop('100', false);
         }
+
         if (
-          !trigger100 &&
+          this.distancePhase === '200' &&
           heroCenter >= baseGoalX - this.markerSpacing * 1
         ) {
+          this.distancePhase = '100';
           this.distanceTelopState['100'].remaining = RACE_CLIMAX_DISTANCE_DURATION;
           this.showDistanceTelop('100', true);
-          this.distanceTelopTriggered['100'] = true;
+          this.showDistanceTelop('200', false);
         }
       }
       updateCamera(deltaSeconds, stateKey) {
