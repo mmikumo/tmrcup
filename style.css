@@ -350,6 +350,17 @@
       text-align: center;
       flex: 1;
     }
+
+    .app-version {
+      position: absolute;
+      right: calc(12px * var(--stage-scale-factor));
+      bottom: calc(12px * var(--stage-scale-factor));
+      font-size: calc(12px * var(--stage-scale-factor));
+      color: #fff;
+      opacity: 0.6;
+      pointer-events: none;
+      user-select: none;
+    }
     
     
     .title-backdrop {
