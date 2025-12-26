@@ -23,6 +23,7 @@
     const PREDICTION_BOTTOM_ROW_RIGHT_OFFSET = 85; // 下段右端のオフセット（ステージ内に収める）
     const MAX_SELECTION_RANKS = 3; // 選択できる順位の数（1〜3着）
     const DEFAULT_PREVIEW_HORSE_ID = 'h1';
+    const APP_VERSION = '0.5.1-PR-05A';
     
     // レース描画用の仮想解像度と演出用定数
     const RACE_VIRTUAL_WIDTH = 750;
@@ -308,6 +309,7 @@
     const app = document.querySelector('.app');
     const stageWrapper = document.querySelector('.stage-wrapper');
     const stage = document.querySelector('.stage');
+    const titleStage = document.querySelector('.title-stage');
     const buttonGroups = document.querySelectorAll('[data-buttons-id]');
     const screens = document.querySelectorAll('.screen');
     const horseGrid = document.querySelector('.horse-grid');
@@ -758,6 +760,7 @@
     initHorseFrameDetection();
     renderHorseCards();
     initTitleRunners();
+    renderAppVersion();
     resetPreviewPanel();
     updateSelectionSlots();
     updateSelectButtonState();
@@ -966,6 +969,22 @@
         applyPixelImgClassIfNeeded(imgEl, imgEl.src);
       };
       apply(index);
+    }
+
+    function renderAppVersion() {
+      if (!titleStage) return;
+
+      let versionEl = titleStage.querySelector('.app-version');
+      if (!versionEl) {
+        versionEl = document.createElement('div');
+        versionEl.className = 'app-version';
+        titleStage.append(versionEl);
+      }
+
+      const displayVersion = APP_VERSION.includes('-')
+        ? APP_VERSION.replace('-', ' / ')
+        : APP_VERSION;
+      versionEl.textContent = `ver ${displayVersion}`;
     }
     
     function initTitleRunners() {
